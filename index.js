@@ -27,8 +27,10 @@ async function run() {
     await client.connect();
 
     const serviceCollection = client.db('carDoctor').collection('services');
+    const bookingsCollection = client.db('carDoctor').collection('booking');
 
 
+    // service categories
     app.get('/service', async(req,res) =>{
         const cursor = serviceCollection.find();
         const result = await cursor.toArray()
@@ -42,8 +44,51 @@ async function run() {
         res.send(result)
     })
 
+    // checkout categories
 
+    app.post('/booking', async(req,res) =>{
+        const booking = req.body;
+        const result = await bookingsCollection.insertOne(booking);
+        res.send(result)
 
+    });
+
+    // checkout get data
+    app.get('/booking', async(req,res) =>{
+
+        console.log(req.query.email);
+        let query ={};
+        if(req.query.email){
+          query = {email: req.query.email}
+        }
+        const cursor = bookingsCollection.find(query)
+        const result = await cursor.toArray()
+        res.send(result)
+    })
+
+    // delete booking
+    app.delete('/booking/:id', async(req,res) =>{
+      const id  = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await bookingsCollection.deleteOne(query);
+      res.send(result)
+    })
+
+    // update item
+    app.patch('/booking/:id', async(req,res) =>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedbooking = req.body;
+      console.log(updatedbooking);
+      const updatedoc = {
+        $set: {
+          status: updatedbooking.status
+        }
+      }
+      const result = await bookingsCollection.updateOne(filter,updatedoc);
+      res.send(result)
+
+    })
 
 
 
